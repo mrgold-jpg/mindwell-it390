@@ -132,6 +132,10 @@
             "<br><br><strong>Your Reflection:</strong> " + reflectionText +
             "<br><br><strong>System Feedback:</strong> " + message;
         feedbackBox.style.display = "block";
+		localStorage.setItem("lastEntry", JSON.stringify({
+        mood: selectedMood,
+        reflection: reflectionText
+        }));
         document.getElementById("reflection").value = "";
         selectedMood = "";
 		if (reflectionText.trim() === "") {
