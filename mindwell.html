@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>MindWell</title>
+<style>
+    body {
+        font-family: Arial, Helvetica, sans-serif;
+        background: #f2f4f8;
+        margin: 0;
+        padding: 0;
+        color: #333;
+    }
+    header {
+        background: #2f5d62;
+        color: white;
+        padding: 20px;
+        text-align: center;
+    }
+    main {
+        max-width: 800px;
+        margin: 30px auto;
+        padding: 20px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    h2 {
+        margin-top: 0;
+        color: #2f5d62;
+    }
+    .mood-buttons {
+        display: flex;
+        justify-content: space-between;
+        margin: 20px 0;
+    }
+    .mood-buttons button {
+        flex: 1;
+        margin: 0 5px;
+        padding: 15px;
+        font-size: 16px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        background: #e0e0e0;
+        transition: background 0.3s;
+    }
+    .mood-buttons button:hover {
+        background: #cfd8dc;
+    }
+    textarea {
+        width: 100%;
+        height: 100px;
+        padding: 10px;
+        font-size: 14px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+        resize: none;
+    }
+    .log-button {
+        margin-top: 15px;
+        padding: 12px;
+        width: 100%;
+        background: #2f5d62;
+        color: white;
+        font-size: 16px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+    }
+    .log-button:hover {
+        background: #24484c;
+    }
+    .output {
+        margin-top: 25px;
+        padding: 15px;
+        background: #eef6f7;
+        border-left: 5px solid #2f5d62;
+        border-radius: 4px;
+        display: none;
+    }
+    footer {
+        text-align: center;
+        padding: 15px;
+        font-size: 12px;
+        color: #666;
+    }
+</style>
+</head>
+<body>
+<header>
+    <h1>MindWell</h1>
+    <p>Mental Health – Emotional Check-In Interface</p>
+</header>
+<main>
+    <h2>Daily Emotional Check-In</h2>
+    <p>Select your current mood and briefly describe how you feel.</p>
+    <div class="mood-buttons">
+        <button onclick="selectMood('Calm')">Calm</button>
+        <button onclick="selectMood('Okay')">Okay</button>
+        <button onclick="selectMood('Anxious')">Anxious</button>
+        <button onclick="selectMood('Overwhelmed')">Overwhelmed</button>
+    </div>
+    <textarea id="reflection" placeholder="Write a short reflection..."></textarea>
+    <button class="log-button" onclick="logMood()">Log Mood</button>
+    <div class="output" id="feedbackBox"></div>
+</main>
+<footer>
+    © 2026 MindWell
+</footer>
+<script>
+    let selectedMood = "";
+    function selectMood(mood) {
+        selectedMood = mood;
+        alert("Mood selected: " + mood);
+    }
+    function logMood() {
+        let reflectionText = document.getElementById("reflection").value;
+        let feedbackBox = document.getElementById("feedbackBox");
+        if (selectedMood === "") {
+            alert("Please select a mood first.");
+            return;
+        }
+        let message = "";
+        if (selectedMood === "Calm" || selectedMood === "Okay") {
+            message = "It looks like you're managing well today. Consider reinforcing what’s working for you.";
+        } else {
+            message = "You may be experiencing stress. Consider slowing down, practicing grounding techniques, or reaching out for support.";
+        }
+        feedbackBox.innerHTML =
+            "<strong>Mood Logged:</strong> " + selectedMood +
+            "<br><br><strong>Your Reflection:</strong> " + reflectionText +
+            "<br><br><strong>System Feedback:</strong> " + message;
+        feedbackBox.style.display = "block";
+        document.getElementById("reflection").value = "";
+        selectedMood = "";
+		if (reflectionText.trim() === "") {
+		alert("Please write a short reflection.");
+		return;
+}
+}
+</script>
+</body>
+</html>
