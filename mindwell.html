@@ -85,6 +85,37 @@
         font-size: 12px;
         color: #666;
     }
+	body.calm {
+    background: linear-gradient(135deg, #d7f9f1, #f0fff9);
+}
+
+body.okay {
+    background: linear-gradient(135deg, #e8f1ff, #f5f9ff);
+}
+
+body.anxious {
+    background: linear-gradient(135deg, #fff4e6, #ffe8cc);
+}
+
+body.overwhelmed {
+    background: linear-gradient(135deg, #ffe3e3, #fff5f5);
+}
+
+.visual {
+    text-align: center;
+    font-size: 50px;
+    margin-top: 15px;
+    transition: opacity 0.5s ease;
+}
+
+.glow {
+    animation: softGlow 4s infinite alternate;
+}
+
+@keyframes softGlow {
+    from { filter: brightness(100%); }
+    to { filter: brightness(110%); }
+}
 </style>
 </head>
 <body>
@@ -104,45 +135,62 @@
     <textarea id="reflection" placeholder="Write a short reflection..."></textarea>
     <button class="log-button" onclick="logMood()">Log Mood</button>
     <div class="output" id="feedbackBox"></div>
+	<div class="visual glow" id="moodVisual"></div>
 </main>
 <footer>
     © 2026 MindWell
 </footer>
 <script>
-    let selectedMood = "";
-    function selectMood(mood) {
-        selectedMood = mood;
-        alert("Mood selected: " + mood);
+let selectedMood = "";
+function selectMood(mood) {
+    selectedMood = mood;
+    document.body.classList.remove("calm", "okay", "anxious", "overwhelmed");
+    document.body.classList.add(mood.toLowerCase());
+    const moodVisual = document.getElementById("moodVisual");
+    if (mood === "Calm") {
+        moodVisual.innerHTML = "🌊✨";
+    } 
+    else if (mood === "Okay") {
+        moodVisual.innerHTML = "🌤️🌿";
+    } 
+    else if (mood === "Anxious") {
+        moodVisual.innerHTML = "🍃💨";
+    } 
+    else if (mood === "Overwhelmed") {
+        moodVisual.innerHTML = "🌧️☁️";
     }
-    function logMood() {
-        let reflectionText = document.getElementById("reflection").value;
-        let feedbackBox = document.getElementById("feedbackBox");
-        if (selectedMood === "") {
-            alert("Please select a mood first.");
-            return;
-        }
-        let message = "";
-        if (selectedMood === "Calm" || selectedMood === "Okay") {
-            message = "It looks like you're managing well today. Consider reinforcing what’s working for you.";
-        } else {
-            message = "You may be experiencing stress. Consider slowing down, practicing grounding techniques, or reaching out for support.";
-        }
-        feedbackBox.innerHTML =
-            "<strong>Mood Logged:</strong> " + selectedMood +
-            "<br><br><strong>Your Reflection:</strong> " + reflectionText +
-            "<br><br><strong>System Feedback:</strong> " + message;
-        feedbackBox.style.display = "block";
-		localStorage.setItem("lastEntry", JSON.stringify({
+}
+function logMood() {
+    let reflectionText = document.getElementById("reflection").value.trim();
+    let feedbackBox = document.getElementById("feedbackBox");
+    if (selectedMood === "") {
+        alert("Please select a mood first.");
+        return;
+    }
+    if (reflectionText === "") {
+        alert("Please write a short reflection.");
+        return;
+    }
+    let message = "";
+    if (selectedMood === "Calm" || selectedMood === "Okay") {
+        message = "It looks like you're managing well today. Consider reinforcing what’s working for you.";
+    } else {
+        message = "You may be experiencing stress. Consider slowing down, practicing grounding techniques, or reaching out for support.";
+    }
+    feedbackBox.innerHTML =
+        "<strong>Mood Logged:</strong> " + selectedMood +
+        "<br><br><strong>Your Reflection:</strong> " + reflectionText +
+        "<br><br><strong>System Feedback:</strong> " + message;
+    feedbackBox.style.display = "block";
+    localStorage.setItem("lastEntry", JSON.stringify({
         mood: selectedMood,
         reflection: reflectionText
-        }));
-        document.getElementById("reflection").value = "";
-        selectedMood = "";
-		if (reflectionText.trim() === "") {
-		alert("Please write a short reflection.");
-		return;
+    }));
+    document.getElementById("reflection").value = "";
+    selectedMood = "";
 }
-}
+</script>
 </script>
 </body>
 </html>
+
