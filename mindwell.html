@@ -4,6 +4,35 @@
 <meta charset="UTF-8">
 <title>MindWell</title>
 <style>
+#calendar {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+    margin: 20px 0;
+}
+
+.calendar-day {
+    padding: 12px;
+    background: #f1f3f5;
+    border-radius: 6px;
+    text-align: center;
+    cursor: pointer;
+    transition: 0.2s ease;
+    font-weight: bold;
+}
+
+.calendar-day:hover {
+    background: #dfe6e9;
+}
+
+.today {
+    border: 2px solid #2f5d62;
+}
+
+.day-calm { background: #c8f7f0; }
+.day-okay { background: #dbe9ff; }
+.day-anxious { background: #ffe0b2; }
+.day-overwhelmed { background: #ffcdd2; }
     body {
         font-family: Arial, Helvetica, sans-serif;
         background: #f2f4f8;
@@ -125,6 +154,8 @@ body.overwhelmed {
 </header>
 <main>
     <h2>Daily Emotional Check-In</h2>
+	<h3>Monthly Overview</h3>
+	<div id="calendar"></div>
     <p>Select your current mood and briefly describe how you feel.</p>
     <div class="mood-buttons">
         <button onclick="selectMood('Calm')">Calm</button>
@@ -142,23 +173,60 @@ body.overwhelmed {
 </footer>
 <script>
 let selectedMood = "";
+let selectedDate = new Date().toISOString().split("T")[0];
+
+document.addEventListener("DOMContentLoaded", function () {
+    generateCalendar();
+    loadEntry(selectedDate);
+});
+function generateCalendar() {
+    const calendar = document.getElementById("calendar");
+    calendar.innerHTML = "";
+
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth();
+
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+
+    const startDay = firstDay.getDay();
+    const totalDays = lastDay.getDate();
+
+    // Empty spaces before month starts
+    for (let i = 0; i < startDay; i++) {
+        const empty = document.createElement("div");
+        calendar.appendChild(empty);
+    }
+    for (let day = 1; day <= totalDays; day++) {
+        const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+        const dayDiv = document.createElement("div");
+        dayDiv.classList.add("calendar-day");
+        dayDiv.innerText = day;
+        if (dateStr === new Date().toISOString().split("T")[0]) {
+            dayDiv.classList.add("today");
+        }
+        const savedEntry = localStorage.getItem("mood-" + dateStr);
+        if (savedEntry) {
+            const entry = JSON.parse(savedEntry);
+            dayDiv.classList.add("day-" + entry.mood.toLowerCase());
+        }
+        dayDiv.onclick = function () {
+            selectedDate = dateStr;
+            loadEntry(dateStr);
+        };
+        calendar.appendChild(dayDiv);
+    }
+}
 function selectMood(mood) {
     selectedMood = mood;
     document.body.classList.remove("calm", "okay", "anxious", "overwhelmed");
     document.body.classList.add(mood.toLowerCase());
     const moodVisual = document.getElementById("moodVisual");
-    if (mood === "Calm") {
-        moodVisual.innerHTML = "🌊✨";
-    } 
-    else if (mood === "Okay") {
-        moodVisual.innerHTML = "🌤️🌿";
-    } 
-    else if (mood === "Anxious") {
-        moodVisual.innerHTML = "🍃💨";
-    } 
-    else if (mood === "Overwhelmed") {
-        moodVisual.innerHTML = "🌧️☁️";
-    }
+    if (mood === "Calm") moodVisual.innerHTML = "🌊✨";
+    else if (mood === "Okay") moodVisual.innerHTML = "🌤️🌿";
+    else if (mood === "Anxious") moodVisual.innerHTML = "🍃💨";
+    else if (mood === "Overwhelmed") moodVisual.innerHTML = "🌧️☁️";
 }
 function logMood() {
     let reflectionText = document.getElementById("reflection").value.trim();
@@ -171,26 +239,38 @@ function logMood() {
         alert("Please write a short reflection.");
         return;
     }
-    let message = "";
-    if (selectedMood === "Calm" || selectedMood === "Okay") {
-        message = "It looks like you're managing well today. Consider reinforcing what’s working for you.";
-    } else {
-        message = "You may be experiencing stress. Consider slowing down, practicing grounding techniques, or reaching out for support.";
-    }
+    let message = (selectedMood === "Calm" || selectedMood === "Okay")
+        ? "It looks like you're managing well today. Consider reinforcing what’s working for you."
+        : "You may be experiencing stress. Consider slowing down, practicing grounding techniques, or reaching out for support.";
+    const entry = {
+        mood: selectedMood,
+        reflection: reflectionText
+    };
+    localStorage.setItem("mood-" + selectedDate, JSON.stringify(entry));
     feedbackBox.innerHTML =
-        "<strong>Mood Logged:</strong> " + selectedMood +
+        "<strong>Date:</strong> " + selectedDate +
+        "<br><strong>Mood:</strong> " + selectedMood +
         "<br><br><strong>Your Reflection:</strong> " + reflectionText +
         "<br><br><strong>System Feedback:</strong> " + message;
     feedbackBox.style.display = "block";
-    localStorage.setItem("lastEntry", JSON.stringify({
-        mood: selectedMood,
-        reflection: reflectionText
-    }));
     document.getElementById("reflection").value = "";
     selectedMood = "";
+    generateCalendar();
 }
-</script>
+function loadEntry(date) {
+    let feedbackBox = document.getElementById("feedbackBox");
+    let savedEntry = localStorage.getItem("mood-" + date);
+    if (savedEntry) {
+        const entry = JSON.parse(savedEntry);
+        feedbackBox.innerHTML =
+            "<strong>Saved Entry for " + date + ":</strong>" +
+            "<br><br><strong>Mood:</strong> " + entry.mood +
+            "<br><strong>Reflection:</strong> " + entry.reflection;
+        feedbackBox.style.display = "block";
+    } else {
+        feedbackBox.style.display = "none";
+    }
+}
 </script>
 </body>
 </html>
-
