@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>MindWell</title>
+<nav>
+    <a href="index.html">Home</a>
+    <a href="insights.html">Insights</a>
+    <a href="journal.html">Journal</a>
+    <a href="resources.html">Resources</a>
+</nav>
+<style>
+nav {
+    margin-top: 10px;
+}
+nav a {
+    color: black;
+    text-decoration: none;
+    margin: 0 15px;
+    font-weight: bold;
+}
+nav a:hover {
+    text-decoration: underline;
+}
+#calendar {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+    margin: 20px 0;
+}
+
+.calendar-day {
+    padding: 12px;
+    background: #f1f3f5;
+    border-radius: 6px;
+    text-align: center;
+    cursor: pointer;
+    transition: 0.2s ease;
+    font-weight: bold;
+}
+
+.calendar-day:hover {
+    background: #dfe6e9;
+}
+
+.today {
+    border: 2px solid #2f5d62;
+}
+
+.day-calm { background: #c8f7f0; }
+.day-okay { background: #dbe9ff; }
+.day-anxious { background: #ffe0b2; }
+.day-overwhelmed { background: #ffcdd2; }
+    body {
+        font-family: Arial, Helvetica, sans-serif;
+        background: #f2f4f8;
+        margin: 0;
+        padding: 0;
+        color: #333;
+    }
+    header {
+        background: #2f5d62;
+        color: white;
+        padding: 20px;
+        text-align: center;
+    }
+    main {
+        max-width: 800px;
+        margin: 30px auto;
+        padding: 20px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    h2 {
+        margin-top: 0;
+        color: #2f5d62;
+    }
+    .mood-buttons {
+        display: flex;
+        justify-content: space-between;
+        margin: 20px 0;
+    }
+    .mood-buttons button {
+        flex: 1;
+        margin: 0 5px;
+        padding: 15px;
+        font-size: 16px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        background: #e0e0e0;
+        transition: background 0.3s;
+    }
+    .mood-buttons button:hover {
+        background: #cfd8dc;
+    }
+    textarea {
+        width: 100%;
+        height: 100px;
+        padding: 10px;
+        font-size: 14px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+        resize: none;
+    }
+    .log-button {
+        margin-top: 15px;
+        padding: 12px;
+        width: 100%;
+        background: #2f5d62;
+        color: white;
+        font-size: 16px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+    }
+    .log-button:hover {
+        background: #24484c;
+    }
+    .output {
+        margin-top: 25px;
+        padding: 15px;
+        background: #eef6f7;
+        border-left: 5px solid #2f5d62;
+        border-radius: 4px;
+        display: none;
+    }
+    footer {
+        text-align: center;
+        padding: 15px;
+        font-size: 12px;
+        color: #666;
+    }
+	body.calm {
+    background: linear-gradient(135deg, #d7f9f1, #f0fff9);
+}
+
+body.okay {
+    background: linear-gradient(135deg, #e8f1ff, #f5f9ff);
+}
+
+body.anxious {
+    background: linear-gradient(135deg, #fff4e6, #ffe8cc);
+}
+
+body.overwhelmed {
+    background: linear-gradient(135deg, #ffe3e3, #fff5f5);
+}
+
+.visual {
+    text-align: center;
+    font-size: 50px;
+    margin-top: 15px;
+    transition: opacity 0.5s ease;
+}
+
+.glow {
+    animation: softGlow 4s infinite alternate;
+}
+
+@keyframes softGlow {
+    from { filter: brightness(100%); }
+    to { filter: brightness(110%); }
+}
+</style>
+</head>
+<body>
+<header>
+    <h1>MindWell</h1>
+    <p>Mental Health – Emotional Check-In Interface</p>
+</header>
+<main>
+    <h2>Daily Emotional Check-In</h2>
+	<h3>Monthly Overview</h3>
+	<div id="calendar"></div>
+    <p>Select your current mood and briefly describe how you feel.</p>
+    <div class="mood-buttons">
+        <button onclick="selectMood('Calm')">Calm</button>
+        <button onclick="selectMood('Okay')">Okay</button>
+        <button onclick="selectMood('Anxious')">Anxious</button>
+        <button onclick="selectMood('Overwhelmed')">Overwhelmed</button>
+    </div>
+    <textarea id="reflection" placeholder="Write a short reflection..."></textarea>
+    <button class="log-button" onclick="logMood()">Log Mood</button>
+    <div class="output" id="feedbackBox"></div>
+	<div class="visual glow" id="moodVisual"></div>
+</main>
+<footer>
+    © 2026 MindWell
+</footer>
+<script>
+let selectedMood = "";
+let selectedDate = new Date().toISOString().split("T")[0];
+
+document.addEventListener("DOMContentLoaded", function () {
+    generateCalendar();
+    loadEntry(selectedDate);
+});
+function generateCalendar() {
+    const calendar = document.getElementById("calendar");
+    calendar.innerHTML = "";
+
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth();
+
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+
+    const startDay = firstDay.getDay();
+    const totalDays = lastDay.getDate();
+
+    // Empty spaces before month starts
+    for (let i = 0; i < startDay; i++) {
+        const empty = document.createElement("div");
+        calendar.appendChild(empty);
+    }
+    for (let day = 1; day <= totalDays; day++) {
+        const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+        const dayDiv = document.createElement("div");
+        dayDiv.classList.add("calendar-day");
+        dayDiv.innerText = day;
+        if (dateStr === new Date().toISOString().split("T")[0]) {
+            dayDiv.classList.add("today");
+        }
+        const savedEntry = localStorage.getItem("mood-" + dateStr);
+        if (savedEntry) {
+            const entry = JSON.parse(savedEntry);
+            dayDiv.classList.add("day-" + entry.mood.toLowerCase());
+        }
+        dayDiv.onclick = function () {
+            selectedDate = dateStr;
+            loadEntry(dateStr);
+        };
+        calendar.appendChild(dayDiv);
+    }
+}
+function selectMood(mood) {
+    selectedMood = mood;
+    document.body.classList.remove("calm", "okay", "anxious", "overwhelmed");
+    document.body.classList.add(mood.toLowerCase());
+    const moodVisual = document.getElementById("moodVisual");
+    if (mood === "Calm") moodVisual.innerHTML = "🌊✨";
+    else if (mood === "Okay") moodVisual.innerHTML = "🌤️🌿";
+    else if (mood === "Anxious") moodVisual.innerHTML = "🍃💨";
+    else if (mood === "Overwhelmed") moodVisual.innerHTML = "🌧️☁️";
+}
+function logMood() {
+    let reflectionText = document.getElementById("reflection").value.trim();
+    let feedbackBox = document.getElementById("feedbackBox");
+    if (selectedMood === "") {
+        alert("Please select a mood first.");
+        return;
+    }
+    if (reflectionText === "") {
+        alert("Please write a short reflection.");
+        return;
+    }
+    let message = (selectedMood === "Calm" || selectedMood === "Okay")
+        ? "It looks like you're managing well today. Consider reinforcing what’s working for you."
+        : "You may be experiencing stress. Consider slowing down, practicing grounding techniques, or reaching out for support.";
+    const entry = {
+        mood: selectedMood,
+        reflection: reflectionText
+    };
+    localStorage.setItem("mood-" + selectedDate, JSON.stringify(entry));
+    feedbackBox.innerHTML =
+        "<strong>Date:</strong> " + selectedDate +
+        "<br><strong>Mood:</strong> " + selectedMood +
+        "<br><br><strong>Your Reflection:</strong> " + reflectionText +
+        "<br><br><strong>System Feedback:</strong> " + message;
+    feedbackBox.style.display = "block";
+    document.getElementById("reflection").value = "";
+    selectedMood = "";
+    generateCalendar();
+}
+function loadEntry(date) {
+    let feedbackBox = document.getElementById("feedbackBox");
+    let savedEntry = localStorage.getItem("mood-" + date);
+    if (savedEntry) {
+        const entry = JSON.parse(savedEntry);
+        feedbackBox.innerHTML =
+            "<strong>Saved Entry for " + date + ":</strong>" +
+            "<br><br><strong>Mood:</strong> " + entry.mood +
+            "<br><strong>Reflection:</strong> " + entry.reflection;
+        feedbackBox.style.display = "block";
+    } else {
+        feedbackBox.style.display = "none";
+    }
+}
+</script>
+</body>
+</html>

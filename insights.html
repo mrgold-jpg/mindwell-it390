@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>MindWell – Insights</title>
+<nav>
+    <a href="index.html">Home</a>
+    <a href="insights.html">Insights</a>
+    <a href="journal.html">Journal</a>
+    <a href="resources.html">Resources</a>
+</nav>
+<style>
+nav {
+    margin-top: 10px;
+}
+
+nav a {
+    color: black;
+    text-decoration: none;
+    margin: 0 15px;
+    font-weight: bold;
+}
+
+nav a:hover {
+    text-decoration: underline;
+}
+body { font-family: Arial; background:#f2f4f8; margin:0; }
+header { background:#2f5d62; color:white; padding:20px; text-align:center; }
+main { max-width:800px; margin:30px auto; background:white; padding:20px; border-radius:8px; }
+.stat { padding:10px; margin:10px 0; background:#eef6f7; border-left:5px solid #2f5d62; }
+</style>
+</head>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    document.body.classList.add("page-loaded");
+});
+
+// Intercept all internal navigation links
+document.querySelectorAll("nav a").forEach(link => {
+    link.addEventListener("click", function (e) {
+        e.preventDefault();
+        const target = this.href;
+
+        document.body.classList.remove("page-loaded");
+        document.body.classList.add("page-exit");
+
+        setTimeout(() => {
+            window.location.href = target;
+        }, 350);
+    });
+});
+</script>
+<body>
+<header>
+    <h1>MindWell</h1>
+    <p>Mental Health – Emotional Check-In Interface</p>
+</header>
+
+<main>
+    <h2>Mood Insights</h2>
+    <div id="stats"></div>
+</main>
+
+<script>
+function loadInsights() {
+    let calm=0, okay=0, anxious=0, overwhelmed=0;
+
+    for (let i=0; i<localStorage.length; i++) {
+        let key = localStorage.key(i);
+        if (key.startsWith("mood-")) {
+            const entry = JSON.parse(localStorage.getItem(key));
+            if (entry.mood === "Calm") calm++;
+            if (entry.mood === "Okay") okay++;
+            if (entry.mood === "Anxious") anxious++;
+            if (entry.mood === "Overwhelmed") overwhelmed++;
+        }
+    }
+
+    document.getElementById("stats").innerHTML = `
+        <div class="stat">Calm days: ${calm}</div>
+        <div class="stat">Okay days: ${okay}</div>
+        <div class="stat">Anxious days: ${anxious}</div>
+        <div class="stat">Overwhelmed days: ${overwhelmed}</div>
+    `;
+}
+
+loadInsights();
+</script>
+</body>
+</html>

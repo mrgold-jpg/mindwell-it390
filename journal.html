@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>MindWell – Journal</title>
+<nav>
+    <a href="index.html">Home</a>
+    <a href="insights.html">Insights</a>
+    <a href="journal.html">Journal</a>
+    <a href="resources.html">Resources</a>
+</nav>
+<style>
+nav {
+    margin-top: 10px;
+}
+
+nav a {
+    color: ;
+    text-decoration: none;
+    margin: 0 15px;
+    font-weight: bold;
+}
+
+nav a:hover {
+    text-decoration: underline;
+}
+body { font-family: Arial; background:#f2f4f8; margin:0; }
+header { background:#2f5d62; color:white; padding:20px; text-align:center; }
+main { max-width:800px; margin:30px auto; background:white; padding:20px; border-radius:8px; }
+.entry { padding:10px; margin:10px 0; background:#eef6f7; border-radius:6px; }
+</style>
+</head>
+<body>
+<header>
+    <h1>MindWell</h1>
+    <p>Mental Health – Emotional Check-In Interface</p>
+</header>
+   
+
+<main>
+    <h2>Journal History</h2>
+    <div id="entries"></div>
+</main>
+
+<script>
+function loadJournal() {
+    let entriesDiv = document.getElementById("entries");
+    let entries = [];
+
+    for (let i=0; i<localStorage.length; i++) {
+        let key = localStorage.key(i);
+        if (key.startsWith("mood-")) {
+            let date = key.replace("mood-","");
+            let entry = JSON.parse(localStorage.getItem(key));
+            entries.push({date, ...entry});
+        }
+    }
+
+    entries.sort((a,b) => new Date(b.date) - new Date(a.date));
+
+    entriesDiv.innerHTML = entries.map(e => `
+        <div class="entry">
+            <strong>${e.date}</strong><br>
+            Mood: ${e.mood}<br>
+            Reflection: ${e.reflection}
+        </div>
+    `).join("");
+}
+
+loadJournal();
+</script>
+</body>
+</html>
