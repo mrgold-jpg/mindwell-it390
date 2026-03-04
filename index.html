@@ -3,25 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>MindWell</title>
-<nav>
-    <a href="index.html">Home</a>
-    <a href="insights.html">Insights</a>
-    <a href="journal.html">Journal</a>
-    <a href="resources.html">Resources</a>
-</nav>
 <style>
-nav {
-    margin-top: 10px;
-}
-nav a {
-    color: black;
-    text-decoration: none;
-    margin: 0 15px;
-    font-weight: bold;
-}
-nav a:hover {
-    text-decoration: underline;
-}
 #calendar {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
@@ -183,6 +165,7 @@ body.overwhelmed {
     </div>
     <textarea id="reflection" placeholder="Write a short reflection..."></textarea>
     <button class="log-button" onclick="logMood()">Log Mood</button>
+	<button class="log-button" style="background:#b23b3b;" onclick="clearMood()">Clear Entry</button>
     <div class="output" id="feedbackBox"></div>
 	<div class="visual glow" id="moodVisual"></div>
 </main>
@@ -288,6 +271,21 @@ function loadEntry(date) {
     } else {
         feedbackBox.style.display = "none";
     }
+}
+function clearMood() {
+    if (!selectedDate) return;
+
+    const confirmClear = confirm("Are you sure you want to delete this entry?");
+    if (!confirmClear) return;
+
+    localStorage.removeItem("mood-" + selectedDate);
+
+    document.getElementById("reflection").value = "";
+    document.getElementById("feedbackBox").style.display = "none";
+
+    selectedMood = "";
+
+    generateCalendar();
 }
 </script>
 </body>
