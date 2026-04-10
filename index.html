@@ -200,9 +200,18 @@ document.addEventListener("DOMContentLoaded", function () {
     generateCalendar();
     loadEntry(selectedDate);
 });
-function generateCalendar() {
+async function generateCalendar() {
     const calendar = document.getElementById("calendar");
     calendar.innerHTML = "";
+
+    // 🔥 NEW: fetch moods
+    const response = await fetch("/api/moods");
+    const moods = await response.json();
+
+    const moodMap = {};
+    moods.forEach(m => {
+        moodMap[m.date] = m.mood;
+    });
 
     const now = new Date();
     const year = now.getFullYear();
@@ -214,28 +223,32 @@ function generateCalendar() {
     const startDay = firstDay.getDay();
     const totalDays = lastDay.getDate();
 
-    // Empty spaces before month starts
     for (let i = 0; i < startDay; i++) {
         const empty = document.createElement("div");
         calendar.appendChild(empty);
     }
+
     for (let day = 1; day <= totalDays; day++) {
         const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
         const dayDiv = document.createElement("div");
+
         dayDiv.classList.add("calendar-day");
         dayDiv.innerText = day;
+
         if (dateStr === new Date().toISOString().split("T")[0]) {
             dayDiv.classList.add("today");
         }
-        const savedEntry = localStorage.getItem("mood-" + dateStr);
-        if (savedEntry) {
-            const entry = JSON.parse(savedEntry);
-            dayDiv.classList.add("day-" + entry.mood.toLowerCase());
+
+        // 🔥 NEW: use API data
+        if (moodMap[dateStr]) {
+            dayDiv.classList.add("day-" + moodMap[dateStr].toLowerCase());
         }
+
         dayDiv.onclick = function () {
             selectedDate = dateStr;
             loadEntry(dateStr);
         };
+
         calendar.appendChild(dayDiv);
     }
 }
@@ -249,62 +262,66 @@ function selectMood(mood) {
     else if (mood === "Anxious") moodVisual.innerHTML = "🍃💨";
     else if (mood === "Overwhelmed") moodVisual.innerHTML = "🌧️☁️";
 }
-function logMood() {
+async function logMood() {
     let reflectionText = document.getElementById("reflection").value.trim();
-    let feedbackBox = document.getElementById("feedbackBox");
+
     if (selectedMood === "") {
         alert("Please select a mood first.");
         return;
     }
+
     if (reflectionText === "") {
         alert("Please write a short reflection.");
         return;
     }
-    let message = (selectedMood === "Calm" || selectedMood === "Okay")
-        ? "It looks like you're managing well today. Consider reinforcing what’s working for you."
-        : "You may be experiencing stress. Consider slowing down, practicing grounding techniques, or reaching out for support.";
+
     const entry = {
+        date: selectedDate,
         mood: selectedMood,
         reflection: reflectionText
     };
-    localStorage.setItem("mood-" + selectedDate, JSON.stringify(entry));
-    feedbackBox.innerHTML =
-        "<strong>Date:</strong> " + selectedDate +
-        "<br><strong>Mood:</strong> " + selectedMood +
-        "<br><br><strong>Your Reflection:</strong> " + reflectionText +
-        "<br><br><strong>System Feedback:</strong> " + message;
-    feedbackBox.style.display = "block";
-    document.getElementById("reflection").value = "";
-    selectedMood = "";
+
+    await fetch("/api/moods", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(entry)
+    });
+
     generateCalendar();
 }
-function loadEntry(date) {
+
+async function loadEntry(date) {
     let feedbackBox = document.getElementById("feedbackBox");
-    let savedEntry = localStorage.getItem("mood-" + date);
-    if (savedEntry) {
-        const entry = JSON.parse(savedEntry);
-        feedbackBox.innerHTML =
-            "<strong>Saved Entry for " + date + ":</strong>" +
-            "<br><br><strong>Mood:</strong> " + entry.mood +
-            "<br><strong>Reflection:</strong> " + entry.reflection;
-        feedbackBox.style.display = "block";
-    } else {
+
+    const res = await fetch("/api/moods/" + date);
+
+    if (res.status === 404) {
         feedbackBox.style.display = "none";
+        return;
     }
+
+    const entry = await res.json();
+
+    feedbackBox.innerHTML =
+        "<strong>Saved Entry for " + date + ":</strong>" +
+        "<br><br><strong>Mood:</strong> " + entry.mood +
+        "<br><strong>Reflection:</strong> " + entry.reflection;
+
+    feedbackBox.style.display = "block";
 }
-function clearMood() {
+async function clearMood() {
     if (!selectedDate) return;
 
-    const confirmClear = confirm("Are you sure you want to delete this entry?");
+    const confirmClear = confirm("Are you sure?");
     if (!confirmClear) return;
 
-    localStorage.removeItem("mood-" + selectedDate);
+    await fetch("/api/moods/" + selectedDate, {
+        method: "DELETE"
+    });
 
-    document.getElementById("reflection").value = "";
     document.getElementById("feedbackBox").style.display = "none";
-
-    selectedMood = "";
-
     generateCalendar();
 }
 </script>
